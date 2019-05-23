@@ -47,7 +47,7 @@ namespace NetCoreWebAPIDapper.Controllers
             using(var conn = new SqlConnection(_connectionString))
             {
                 if (conn.State == ConnectionState.Closed)
-                    conn.Open();
+                    await conn.OpenAsync();
                 var paramates = new DynamicParameters();
                 paramates.Add("@language", CultureInfo.CurrentCulture.Name);
                 var result = await conn.QueryAsync<Product>("Get_Product_All", paramates, null, null, CommandType.StoredProcedure);
@@ -62,7 +62,7 @@ namespace NetCoreWebAPIDapper.Controllers
             using (var conn = new SqlConnection(_connectionString))
             {
                 if (conn.State == ConnectionState.Closed)
-                    conn.Open();
+                    await conn.OpenAsync();
                 var paramaters = new DynamicParameters();
                 paramaters.Add("@id", id);
                 paramaters.Add("@language", CultureInfo.CurrentCulture.Name);
@@ -79,7 +79,7 @@ namespace NetCoreWebAPIDapper.Controllers
             using (var conn = new SqlConnection(_connectionString))
             {
                 if (conn.State == ConnectionState.Closed)
-                    conn.Open();
+                    await conn.OpenAsync();
                 var paramaters = new DynamicParameters();
                 var id = Guid.NewGuid();
                 paramaters.Add("@name", product.Name);
@@ -111,7 +111,7 @@ namespace NetCoreWebAPIDapper.Controllers
             using (var conn = new SqlConnection(_connectionString))
             {
                 if (conn.State == ConnectionState.Closed)
-                    conn.Open();
+                    await conn.OpenAsync();
                 var paramaters = new DynamicParameters();
                 paramaters.Add("@id", id);
                 paramaters.Add("@name", product.Name);
@@ -140,7 +140,7 @@ namespace NetCoreWebAPIDapper.Controllers
             using (var conn = new SqlConnection(_connectionString))
             {
                 if (conn.State == ConnectionState.Closed)
-                    conn.Open();
+                    await conn.OpenAsync();
                 var paramaters = new DynamicParameters();
                 paramaters.Add("@id", id);
                 await conn.ExecuteAsync("Delete_Product_ById", paramaters, null, null, CommandType.StoredProcedure);

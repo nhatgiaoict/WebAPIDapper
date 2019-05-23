@@ -9,7 +9,8 @@ namespace NetCoreWebAPIDapper.Models
     public class Product
     {
         public Guid Id { get; set; }
-        [Required(ErrorMessage ="SKURequiredMsg")]
+        [Required(ErrorMessage ="RequiredMsg")]
+        [StringLength(8, ErrorMessage ="MinAndMaxlengthErrorMsg", MinimumLength =6)]
         public string Sku { get; set; }
 
         public float Price { get; set; }
