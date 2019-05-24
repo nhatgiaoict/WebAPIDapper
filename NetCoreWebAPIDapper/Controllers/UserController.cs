@@ -146,6 +146,7 @@ namespace NetCoreWebAPIDapper.Controllers
         }
 
         [HttpGet("{id}/roles")]
+        [ClaimRequirement(FunctionCode.SYSTEM_USER, ActionCode.VIEW)]
         public async Task<IActionResult> GetUserRoles(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
