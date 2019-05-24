@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NetCoreWebAPIDapper.Models
+namespace NetCoreWebAPIDapper.Data.Models
 {
     public class Product
     {

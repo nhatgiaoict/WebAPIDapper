@@ -19,8 +19,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NetCoreWebAPIDapper.Data;
-using NetCoreWebAPIDapper.Models;
+using NetCoreWebAPIDapper.Data.Data;
+using NetCoreWebAPIDapper.Data.Interface;
+using NetCoreWebAPIDapper.Data.Models;
+using NetCoreWebAPIDapper.Data.Repositories;
 using NetCoreWebAPIDapper.Resources;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Swagger;
@@ -41,7 +43,7 @@ namespace NetCoreWebAPIDapper
         {
             services.AddTransient<IUserStore<AppUser>, UserStore>();
             services.AddTransient<IRoleStore<AppRole>, RoleStore>();
-
+            services.AddTransient<IProductRepository, ProductRepository>();
             services.AddIdentity<AppUser, AppRole>()
                 .AddDefaultTokenProviders();
 

@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using NetCoreWebAPIDapper.Models;
 using NetCoreWebAPIDapper.Extensions;
 using NetCoreWebAPIDapper.Filters;
 using NetCoreWebAPIDapper.ViewModels;
@@ -19,6 +18,7 @@ using System.Data.SqlClient;
 using Dapper;
 using NetCoreWebAPIDapper.Constants;
 using Newtonsoft.Json;
+using NetCoreWebAPIDapper.Data.Models;
 
 namespace NetCoreWebAPIDapper.Controllers
 {
