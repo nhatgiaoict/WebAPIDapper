@@ -15,6 +15,10 @@ using NetCoreWebAPIDapper.Models;
 using NetCoreWebAPIDapper.Extensions;
 using NetCoreWebAPIDapper.Filters;
 using NetCoreWebAPIDapper.ViewModels;
+using System.Data.SqlClient;
+using Dapper;
+using NetCoreWebAPIDapper.Constants;
+using Newtonsoft.Json;
 
 namespace NetCoreWebAPIDapper.Controllers
 {
@@ -27,6 +31,7 @@ namespace NetCoreWebAPIDapper.Controllers
         private readonly IConfiguration _configuration;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly UserManager<AppUser> _userManager;
+        private readonly string _connectionString;
 
         public AccountController(UserManager<AppUser> userManager,
             IConfiguration configuration,
@@ -35,6 +40,7 @@ namespace NetCoreWebAPIDapper.Controllers
             _signInManager = signInManager;
             _userManager = userManager;
             _configuration = configuration;
+            _connectionString = configuration.GetConnectionString("DbConnectionString");
         }
 
         [HttpPost]
@@ -50,18 +56,18 @@ namespace NetCoreWebAPIDapper.Controllers
                 if (!result.Succeeded)
                     return BadRequest("Mật khẩu không đúng");
                 var roles = await _userManager.GetRolesAsync(user);
-                //var permissions = await _permissionService.GetPermissionStringByUserId(user.Id.ToString());
+                var permissions = await GetPermissionByUserId(user.Id.ToString());
                 var claims = new[]
                 {
                     new Claim("Email", user.Email),
-                    //new Claim(SystemConstants.UserClaim.Id, user.Id.ToString()),
-                    //new Claim(ClaimTypes.NameIdentifier, user.UserName),
-                    //new Claim(ClaimTypes.Name, user.UserName),
-                    //new Claim(SystemConstants.UserClaim.FullName, user.FullName),
+                    new Claim(SystemConstants.UserClaim.Id, user.Id.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.UserName),
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(SystemConstants.UserClaim.FullName, user.FullName),
                     //new Claim(SystemConstants.UserClaim.Avatar, string.IsNullOrEmpty(user.Avatar) ? string.Empty : user.Avatar),
-                    //new Claim(SystemConstants.UserClaim.Roles, string.Join(";", roles)),
-                    //new Claim(SystemConstants.UserClaim.Permissions, JsonConvert.SerializeObject(permissions)),
-                    //new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    new Claim(SystemConstants.UserClaim.Roles, string.Join(";", roles)),
+                    new Claim(SystemConstants.UserClaim.Permissions, JsonConvert.SerializeObject(permissions)),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Tokens:Key"]));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -98,6 +104,21 @@ namespace NetCoreWebAPIDapper.Controllers
             }
 
             return BadRequest();
+        }
+
+        private async Task<List<string>> GetPermissionByUserId(string userId)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                if (conn.State == System.Data.ConnectionState.Closed)
+                    conn.Open();
+
+                var paramaters = new DynamicParameters();
+                paramaters.Add("@userId", userId);
+
+                var result = await conn.QueryAsync<string>("Get_Permission_ByUserId", paramaters, null, null, System.Data.CommandType.StoredProcedure);
+                return result.ToList();
+            }
         }
     }
 }
