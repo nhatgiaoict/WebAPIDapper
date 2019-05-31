@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Dapper;
-using NetCoreWebAPIDapper.Models;
 using NetCoreWebAPIDapper.Dtos;
 using NetCoreWebAPIDapper.Filters;
 using System.ComponentModel.DataAnnotations;
+using NetCoreWebAPIDapper.Data.Models;
 
 namespace NetCoreWebAPIDapper.Controllers
 {

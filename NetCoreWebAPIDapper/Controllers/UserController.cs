@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using NetCoreWebAPIDapper.Data.Models;
 using NetCoreWebAPIDapper.Dtos;
 using NetCoreWebAPIDapper.Filters;
-using NetCoreWebAPIDapper.Models;
 
 namespace NetCoreWebAPIDapper.Controllers
 {
@@ -146,6 +146,7 @@ namespace NetCoreWebAPIDapper.Controllers
         }
 
         [HttpGet("{id}/roles")]
+        [ClaimRequirement(FunctionCode.SYSTEM_USER, ActionCode.VIEW)]
         public async Task<IActionResult> GetUserRoles(string id)
         {
             var user = await _userManager.FindByIdAsync(id);

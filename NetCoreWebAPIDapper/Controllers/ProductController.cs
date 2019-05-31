@@ -11,7 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
-using NetCoreWebAPIDapper.Models;
+using NetCoreWebAPIDapper.Data.Interface;
+using NetCoreWebAPIDapper.Data.Models;
 using NetCoreWebAPIDapper.Extensions;
 using NetCoreWebAPIDapper.Filters;
 using NetCoreWebAPIDapper.Resources;
@@ -25,126 +26,61 @@ namespace NetCoreWebAPIDapper.Controllers
     public class ProductController : ControllerBase
     {
         // GET: api/Product
+        private readonly IProductRepository _productRepository;
         private readonly ILogger<ProductController> _logger;
         private readonly IStringLocalizer<ProductController> _localizer;
         private readonly LocService _localService;
         private readonly string _connectionString;
         public ProductController(IConfiguration configuration, ILogger<ProductController> logger,
                                 IStringLocalizer<ProductController> localizer,
-                                LocService localService)
+                                LocService localService,
+                                IProductRepository productRepository)
         {
             _connectionString = configuration.GetConnectionString("DbConnectionString");
             _logger = logger;
             _localizer = localizer;
             _localService = localService;
+            _productRepository = productRepository;
         }
         [HttpGet]
-        public async Task<IEnumerable<Product>> Get()
+        public async Task<IActionResult> Get()
         {
             //var text = _localizer["Test"];
             //var text1 = _localService.GetLocalizedHtmlString("ForgotPassword");
             //_logger.LogError("Test Log");
-            using(var conn = new SqlConnection(_connectionString))
-            {
-                if (conn.State == ConnectionState.Closed)
-                    await conn.OpenAsync();
-                var paramates = new DynamicParameters();
-                paramates.Add("@language", CultureInfo.CurrentCulture.Name);
-                var result = await conn.QueryAsync<Product>("Get_Product_All", paramates, null, null, CommandType.StoredProcedure);
-                return result;
-            }
+            var result = await _productRepository.GetAllAsync(CultureInfo.CurrentCulture.Name);
+            return Ok(result);
         }
 
         // GET: api/Product/5
         [HttpGet("{id}", Name = "Get")]
-        public async Task<Product> Get(Guid id)
+        public async Task<IActionResult> Get(Guid id)
         {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                if (conn.State == ConnectionState.Closed)
-                    await conn.OpenAsync();
-                var paramaters = new DynamicParameters();
-                paramaters.Add("@id", id);
-                paramaters.Add("@language", CultureInfo.CurrentCulture.Name);
-
-                var result = await conn.QueryAsync<Product>("Get_Product_ById", paramaters, null, null, CommandType.StoredProcedure);
-                return result.Single();
-            }
+            return Ok(await _productRepository.GetByIdAsync(id, CultureInfo.CurrentCulture.Name));
         }
 
         [HttpPost]
         [ValidateModel]
         public async Task<IActionResult> Post([FromBody] Product product)
         {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                if (conn.State == ConnectionState.Closed)
-                    await conn.OpenAsync();
-                var paramaters = new DynamicParameters();
-                var id = Guid.NewGuid();
-                paramaters.Add("@name", product.Name);
-                paramaters.Add("@description", product.Description);
-                paramaters.Add("@content", product.Content);
-                paramaters.Add("@seoDescription", product.SeoDescription);
-                paramaters.Add("@seoAlias", product.SeoAlias);
-                paramaters.Add("@seoTitle", product.SeoTitle);
-                paramaters.Add("@seoKeyword", product.SeoKeyword);
-                paramaters.Add("@sku", product.Sku);
-                paramaters.Add("@price", product.Price);
-                paramaters.Add("@discountPrice", product.DiscountPrice);
-                paramaters.Add("@isActive", product.IsActive);
-                paramaters.Add("@imageUrl", product.ImageUrl);
-                paramaters.Add("@language", CultureInfo.CurrentCulture.Name);
-                paramaters.Add("@categoryIds", product.CategoryIds);
-                paramaters.Add("@id", id);
-                var result = await conn.ExecuteAsync("Create_Product", paramaters, null, null, CommandType.StoredProcedure);
-
-                return Ok(id);
-            }
-
+            var id = await _productRepository.AddAsync(product, CultureInfo.CurrentCulture.Name);
+            return Ok(id);
         }
 
         [HttpPut("{id}")]
         [ValidateModel]
         public async Task<IActionResult> Put(Guid id, [FromBody] Product product)
         {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                if (conn.State == ConnectionState.Closed)
-                    await conn.OpenAsync();
-                var paramaters = new DynamicParameters();
-                paramaters.Add("@id", id);
-                paramaters.Add("@name", product.Name);
-                paramaters.Add("@description", product.Description);
-                paramaters.Add("@content", product.Content);
-                paramaters.Add("@seoDescription", product.SeoDescription);
-                paramaters.Add("@seoAlias", product.SeoAlias);
-                paramaters.Add("@seoTitle", product.SeoTitle);
-                paramaters.Add("@seoKeyword", product.SeoKeyword);
-                paramaters.Add("@sku", product.Sku);
-                paramaters.Add("@price", product.Price);
-                paramaters.Add("@discountPrice", product.DiscountPrice);
-                paramaters.Add("@isActive", product.IsActive);
-                paramaters.Add("@imageUrl", product.ImageUrl);
-                paramaters.Add("@language", CultureInfo.CurrentCulture.Name);
-                paramaters.Add("@categoryIds", product.CategoryIds);
-                await conn.ExecuteAsync("Update_Product", paramaters, null, null, CommandType.StoredProcedure);
-                return Ok();
-            }
+            await _productRepository.UpdateAsync(id, product, CultureInfo.CurrentCulture.Name);
+            return Ok();
         }
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public async Task Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                if (conn.State == ConnectionState.Closed)
-                    await conn.OpenAsync();
-                var paramaters = new DynamicParameters();
-                paramaters.Add("@id", id);
-                await conn.ExecuteAsync("Delete_Product_ById", paramaters, null, null, CommandType.StoredProcedure);
-            }
+            await _productRepository.DeleteAsync(id);
+            return Ok();
         }
     }
 }
